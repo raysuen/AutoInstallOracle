@@ -525,7 +525,7 @@ EditDbca18CspFiles(){
 	echo 'listeners=   ' >> ${basedir}/dbca.rsp
 	echo 'variablesFile=' >> ${basedir}/dbca.rsp
 	echo 'variables=ORACLE_BASE_HOME='${orahome}',DB_UNIQUE_NAME='${orasid}',ORACLE_BASE='${orabase}',PDB_NAME=,DB_NAME='${orasid}',ORACLE_HOME='${orahome}',SID='${orasid} >> ${basedir}/dbca.rsp
-	echo 'initParams=undo_tablespace=UNDOTBS1,db_block_size=8192BYTES,nls_language=AMERICAN,dispatchers=(PROTOCOL=TCP) (SERVICE=testXDB),diagnostic_dest={ORACLE_BASE},control_files=("{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control01.ctl", "{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control02.ctl"),remote_login_passwordfile=EXCLUSIVE,audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,processes=300,nls_territory=AMERICA,local_listener=LISTENER_TEST,pga_aggregate_target='${pga}'MB,sga_target='${sga}'MB,open_cursors=1000,compatible=18.0.0,db_name=test,audit_trail=db' >> ${basedir}/dbca.rsp
+	echo 'initParams=undo_tablespace=UNDOTBS1,db_block_size=8192BYTES,nls_language=AMERICAN,dispatchers=(PROTOCOL=TCP) (SERVICE='${orasid}'XDB),diagnostic_dest={ORACLE_BASE},control_files=("{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control01.ctl", "{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control02.ctl"),remote_login_passwordfile=EXCLUSIVE,audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,processes=300,nls_territory=AMERICA,local_listener=LISTENER_TEST,pga_aggregate_target='${pga}'MB,sga_target='${sga}'MB,open_cursors=1000,compatible=18.0.0,db_name=test,audit_trail=db' >> ${basedir}/dbca.rsp
 	echo 'sampleSchema=false' >> ${basedir}/dbca.rsp
 	echo 'memoryPercentage='${perusemom} >> ${basedir}/dbca.rsp
 	echo 'databaseType=MULTIPURPOSE' >> ${basedir}/dbca.rsp

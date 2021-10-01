@@ -183,14 +183,14 @@ InstallRPM(){
 		echo "The ISO file is not mounted on system."
         exit 99
     else
-    	sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
+    	[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
     	echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
     	echo "[server]" >> /etc/yum.repos.d/local.repo
 		echo "name=server" >> /etc/yum.repos.d/local.repo
 		echo "baseurl=file://"${mountPatch} >> /etc/yum.repos.d/local.repo
 		echo "enabled=1" >> /etc/yum.repos.d/local.repo
 		echo "gpgcheck=1" >> /etc/yum.repos.d/local.repo
-		echo "#OraConfEnd" >> /etc/yum.repos.d/local.repo
+		echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
 		rpm --import ${mountPatch}/RPM-GPG-KEY-redhat-release
 
 	fi
