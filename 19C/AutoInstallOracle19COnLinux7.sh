@@ -1,11 +1,12 @@
 #!/bin/bash
 #by raysuen
-#v02.1
+#v2.2
 #
 #characterSet function are new set.
 #Added the codes to generate local yum sources
 #
 #2.1: added yum unzip
+#2.2:edit dbca.rsp
 
 
 #################################################################################
@@ -595,7 +596,7 @@ EditDbca19CspFiles(){
 	echo 'useLocalUndoForPDBs=true' >> ${basedir}/dbca.rsp
 	echo 'pdbAdminPassword=' >> ${basedir}/dbca.rsp
 	echo 'nodelist=    ' >> ${basedir}/dbca.rsp
-	echo 'templateName=/u01/app/oracle/product/19.3.0/dbhome_1/assistants/dbca/templates/New_Database.dbt' >> ${basedir}/dbca.rsp
+	echo 'templateName='${orahome}'/assistants/dbca/templates/New_Database.dbt' >> ${basedir}/dbca.rsp
 	echo 'sysPassword=oracle ' >> ${basedir}/dbca.rsp
 	echo 'systemPassword=oracle ' >> ${basedir}/dbca.rsp
 	echo 'serviceUserPassword=' >> ${basedir}/dbca.rsp
