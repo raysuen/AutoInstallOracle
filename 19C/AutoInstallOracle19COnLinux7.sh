@@ -195,7 +195,7 @@ InstallRPM(){
 		rpm --import ${mountPatch}/RPM-GPG-KEY-redhat-release
 
 	fi
-	yum -y install unzip bc gcc gcc-c++  binutils  make gdb cmake  glibc ksh elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc-devel libaio libaio-devel libXrender libXrender-devel libX11 libXau sysstat libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils compat-libcap1 compat-libstdc++  smartmontools  targetcli python python-configshell python-rtslib python-six  unixODBC unixODBC-devel
+	yum -y install unzip net-tools bc gcc gcc-c++  binutils  make gdb cmake  glibc ksh elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc-devel libaio libaio-devel libXrender libXrender-devel libX11 libXau sysstat libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils compat-libcap1 compat-libstdc++  smartmontools  targetcli python python-configshell python-rtslib python-six  unixODBC unixODBC-devel
 	# -y localinstall compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm 
 	#yum -y localinstall elfutils-libelf-devel-0.168-8.el7.x86_64.rpm
 	ls -l compat* elfutils* | awk -v rpmpackage="" '{rpmpackage=$NF" "rpmpackage}END{print "yum -y localinstall "rpmpackage}' | bash 
