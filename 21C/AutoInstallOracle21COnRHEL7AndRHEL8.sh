@@ -1,6 +1,6 @@
 #!/bin/bash
 #by raysuen
-#v1.0
+#v1.5
 
 
 #################################################################################
@@ -162,10 +162,24 @@ ObtainMemPerc(){
 InstallRPM(){
 	mountPatch=`mount | egrep "iso|ISO" | awk '{print $3}'`
 	
-	if [ `uname -a | awk -F'x86' '{print $1}' | awk -F. '{print $(NF-1)}'` == 'el7' ];then
-		if [ ! ${mountPatch} ];then
-			echo "The ISO file is not mounted on system."
-        	exit 99
+	if [ ! ${mountPatch} ];then
+		echo "No ios file is mounted. Please check whether the YUM command can install the RPM package."
+        	while true
+            do
+				read -p "`echo -e "Go on to install? [${c_yellow}yes/no${c_end}]: "`" isgo
+				if [ ! ${isgo} ];then
+					echo -e "${c_yellow}You must enter yes or no.${c_end}"
+					continue
+				elif [ ${isgo} == "yes" ];then
+					break
+				elif [ ${isgo} == "no" ];then
+					exit 0
+				fi
+            done
+    fi
+    if [ `uname -a | awk -F'x86' '{print $1}' | awk -F. '{print $(NF-1)}'` == 'el7' ];then
+    	if [ ! ${mountPatch} ];then
+    		RpmPackages="net-tools unzip bc binutils elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libstdc++ libxcb make policycoreutils policycoreutils-python smartmontools sysstat unixODBC"
     	else
     		[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
     		echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
@@ -176,16 +190,15 @@ InstallRPM(){
 			echo "gpgcheck=1" >> /etc/yum.repos.d/local.repo
 			echo "#OraConfEnd" >> /etc/yum.repos.d/local.repo
 			rpm --import ${mountPatch}/RPM-GPG-KEY-redhat-release
-		fi
-    	RpmPackages="net-tools unzip bc binutils elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libstdc++ libxcb make policycoreutils policycoreutils-python smartmontools sysstat unixODBC"	
+			RpmPackages="net-tools unzip bc binutils elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libstdc++ libxcb make policycoreutils policycoreutils-python smartmontools sysstat unixODBC"
+    	fi  	
+    
     elif [ `uname -a | awk -F'x86' '{print $1}' | awk -F. '{print $(NF-1)}'` == 'el8' ];then
-        RpmPackages="net-tools unzip bc binutils compat-openssl10 elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libnsl libstdc++ libxcb libibverbs make smartmontools sysstat unixODBC"
-		if [ ! ${mountPatch} ];then
-			echo "The ISO file is not mounted on system."
-        	exit 99
+    	if [ ! ${mountPatch} ];then
+    		RpmPackages="net-tools unzip bc binutils compat-openssl10 elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libnsl libstdc++ libxcb libibverbs make smartmontools sysstat unixODBC"
     	else
-			[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
-	    	echo "[AppStream]" >> /etc/yum.repos.d/local.repo
+    		[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
+			echo "[AppStream]" >> /etc/yum.repos.d/local.repo
 			echo "name=AppStream" >> /etc/yum.repos.d/local.repo
 			echo "baseurl=file:///mnt/AppStream" >> /etc/yum.repos.d/local.repo
 			echo "gpgcheck=0" >> /etc/yum.repos.d/local.repo
@@ -195,8 +208,9 @@ InstallRPM(){
 			echo "baseurl=file:///mnt/BaseOS" >> /etc/yum.repos.d/local.repo
 			echo "gpgcheck=0" >> /etc/yum.repos.d/local.repo
 			echo "#OraConfEnd" >> /etc/yum.repos.d/local.repo
-		fi
-	fi
+    		RpmPackages="net-tools unzip bc binutils compat-openssl10 elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libnsl libstdc++ libxcb libibverbs make smartmontools sysstat unixODBC"
+    	fi 
+    fi
 	
 	echo "yum -y install "${RpmPackages} | bash
 	
@@ -790,5 +804,5 @@ InstallFun(){
 ####################################################################################
 #begin to install
 ####################################################################################
-InstallFun
-
+#InstallFun
+InstallRPM

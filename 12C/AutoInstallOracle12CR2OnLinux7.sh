@@ -1,6 +1,23 @@
 #!/bin/bash
 #by raysuen
-#v2.0
+#v2.5
+
+
+################################################################################
+#Notice: 
+#   before running this script,
+#    please unzip database zip to the base dirctionary first.
+#################################################################################
+#2.2:
+#	Fixed ObtainCharacter's bug
+#   Added checking IOS image mounted
+#
+#2.3
+#	can create container instance
+#
+#2.5
+#   no iso mounted ,can choose to go on.
+#################################################################################
 
 export LANG=C
 
@@ -101,7 +118,7 @@ ObtainCharacter(){
 			if [ ! ${Inchar} ];then
 				echo "You must enter 1 or 2 to choose the character."
 				continue
-			elif [ `grep '^[[:digit:]]*$' <<< "${Inchar}"` ];then
+			elif [ ${Inchar} -ne 1 -a ${Inchar} -ne 2 ];then
 				echo "You must enter 1 or 2 to choose the character."
 				continue
 			elif [ ${Inchar} -eq 1 ];then
@@ -128,6 +145,28 @@ ObtainSID(){
 	if [ "${osid:-None}" == "None" ];then
 		read -p "`echo -e "please enter the sid.default [${c_yellow}orcl${c_end}]: "`" osid
 	fi
+	
+	####################################################################################
+	#get container
+	####################################################################################
+	while true
+	do
+		read -p "`echo -e "Do you create container database？ yes/no. Default \e[1;33m no \e[0m: "`" ContainerConfirm
+		if [ ${ContainerConfirm:-no} == "no" ];then
+			break
+		elif [ ${ContainerConfirm:-no} == "yes" ];then
+			read -p "`echo -e "PDB name:  "`" PDBName
+			if [ ! ${PDBName} ];then
+				echo "PDB name must be not empty!"
+				continue
+			else
+				break
+			fi
+		else
+			echo "You only enter yes or no."
+			continue
+		fi
+	done
 	#echo ${osid}
 	orasid=${osid:-orcl}
 	su - oracle -c "sed -i 's/^ORACLE_SID=$/ORACLE_SID='${orasid}'/g' ~/.bash_profile"
@@ -163,6 +202,33 @@ ObtainMemPerc(){
 #install rpm that oracle is necessary for installing
 ####################################################################################
 InstallRPM(){
+	mountPatch=`mount | egrep "iso|ISO" | awk '{print $3}'`
+	if [ ! ${mountPatch} ];then
+		echo "No ios file is mounted. Please check whether the YUM command can install the RPM package."
+        	while true
+            do
+				read -p "`echo -e "Go on to install? [${c_yellow}yes/no${c_end}]: "`" isgo
+				if [ ! ${isgo} ];then
+					echo -e "${c_yellow}You must enter yes or no.${c_end}"
+					continue
+				elif [ ${isgo} == "yes" ];then
+					break
+				elif [ ${isgo} == "no" ];then
+					exit 0
+				fi
+            done
+    else
+    	[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
+    	echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
+    	echo "[server]" >> /etc/yum.repos.d/local.repo
+		echo "name=server" >> /etc/yum.repos.d/local.repo
+		echo "baseurl=file://"${mountPatch} >> /etc/yum.repos.d/local.repo
+		echo "enabled=1" >> /etc/yum.repos.d/local.repo
+		echo "gpgcheck=1" >> /etc/yum.repos.d/local.repo
+		echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
+		rpm --import ${mountPatch}/RPM-GPG-KEY-redhat-release
+
+	fi
 	yum -y install unzip net-tools binutils compat-libcap1 compat-libstdc++ compat-libstdc++*.i686 gcc gcc-c++ glibc-2*.i686 glibc glibc-devel*.i686 glibc-devel ksh libgcc libgcc-*.i686 libstdc++*.i686 libstdc++ libstdc++-devel libstdc++devel*.i686 libaio-*.i686 libaio libaio-*.i686 libaio-devel libaio-devel*.i686 make sysstat unixODBC-devel unixODBC*.i686
 	# -y localinstall compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm 
 	#yum -y localinstall elfutils-libelf-devel-0.168-8.el7.x86_64.rpm
@@ -426,6 +492,16 @@ EditDbca122RspFiles(){
 	#ZHS16GBK
 	sga=`free -m | awk '/Mem/{print int($2*('${perusemom}'/100)*0.75)}'`
 	pga=`free -m | awk '/Mem/{print int($2*('${perusemom}'/100)*0.25)}'`
+	
+	if [ ${#PDBName} -gt 0 ];then
+		pdbnumber=1
+		ispdb=true
+		pdbAdminPWD=oracle
+	else 
+		pdbnumber=0
+		ispdb=false
+	fi
+	
 	echo 'responseFileVersion=/oracle/assistants/rspfmt_dbca_response_schema_v12.2.0' > ${basedir}/dbca.rsp
 	echo 'gdbName='${orasid} >> ${basedir}/dbca.rsp
 	echo 'sid='${orasid} >> ${basedir}/dbca.rsp
@@ -438,11 +514,11 @@ EditDbca122RspFiles(){
 	echo 'force=false' >> ${basedir}/dbca.rsp
 	echo 'pqPoolName=' >> ${basedir}/dbca.rsp
 	echo 'pqCardinality=' >> ${basedir}/dbca.rsp
-	echo 'createAsContainerDatabase=false' >> ${basedir}/dbca.rsp
-	echo 'numberOfPDBs=0' >> ${basedir}/dbca.rsp
-	echo 'pdbName=' >> ${basedir}/dbca.rsp
+	echo 'createAsContainerDatabase='${ispdb} >> ${basedir}/dbca.rsp
+	echo 'numberOfPDBs='${pdbnumber} >> ${basedir}/dbca.rsp
+	echo 'pdbName='${PDBName} >> ${basedir}/dbca.rsp
 	echo 'useLocalUndoForPDBs=true' >> ${basedir}/dbca.rsp
-	echo 'pdbAdminPassword=' >> ${basedir}/dbca.rsp
+	echo 'pdbAdminPassword='${pdbAdminPWD} >> ${basedir}/dbca.rsp
 	echo 'nodelist=' >> ${basedir}/dbca.rsp
 	echo 'templateName='${orahome}'/assistants/dbca/templates/New_Database.dbt' >> ${basedir}/dbca.rsp
 	echo 'sysPassword=oracle' >> ${basedir}/dbca.rsp
@@ -477,8 +553,8 @@ EditDbca122RspFiles(){
 	echo 'walletPassword=' >> ${basedir}/dbca.rsp
 	echo 'listeners=' >> ${basedir}/dbca.rsp
 	echo 'variablesFile=' >> ${basedir}/dbca.rsp
-	echo 'variables=DB_UNIQUE_NAME='${orasid}',ORACLE_BASE='${orabase}',PDB_NAME=,DB_NAME='${orasid}',ORACLE_HOME='${orahome}',SID='${orasid} >> ${basedir}/dbca.rsp
-	echo 'initParams=undo_tablespace=UNDOTBS1,processes=1000,nls_language=AMERICAN,pga_aggregate_target='${pga}'MB,sga_target='${sga}'MB,dispatchers=(PROTOCOL=TCP) (SERVICE=orclXDB),db_block_size=8192BYTES,diagnostic_dest={ORACLE_BASE},audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,nls_territory=AMERICA,compatible=12.2.0,control_files=("{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control01.ctl", "{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control02.ctl"),db_name=orcl,audit_trail=db,remote_login_passwordfile=EXCLUSIVE,open_cursors=300' >> ${basedir}/dbca.rsp
+	echo 'variables=DB_UNIQUE_NAME='${orasid}',ORACLE_BASE='${orabase}',PDB_NAME='${PDBName}',DB_NAME='${orasid}',ORACLE_HOME='${orahome}',SID='${orasid} >> ${basedir}/dbca.rsp
+	echo 'initParams=undo_tablespace=UNDOTBS1,processes=1000,nls_language=AMERICAN,pga_aggregate_target='${pga}'MB,sga_target='${sga}'MB,dispatchers=(PROTOCOL=TCP) (SERVICE='${orasid}'XDB),db_block_size=8192BYTES,diagnostic_dest={ORACLE_BASE},audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,nls_territory=AMERICA,compatible=12.2.0,control_files=("{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control01.ctl", "{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control02.ctl"),db_name='${orasid}',audit_trail=db,remote_login_passwordfile=EXCLUSIVE,open_cursors=300' >> ${basedir}/dbca.rsp
 	echo 'sampleSchema=false' >> ${basedir}/dbca.rsp
 	echo 'memoryPercentage='${perusemom} >> ${basedir}/dbca.rsp
 	echo 'databaseType=MULTIPURPOSE' >> ${basedir}/dbca.rsp

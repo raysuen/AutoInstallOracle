@@ -1,18 +1,11 @@
 #!/bin/bash
 #by raysuen
-#v2.3
-#
-#characterSet function are new set.
-#Added the codes to generate local yum sources
-#
-#2.1: added yum unzip
-#2.2:edit dbca.rsp
-#2.3: can create container database
-#2.5: can choosing go on to install,when no iso mounted.
+#v1.0
+
 
 #################################################################################
 #Before exec this script:
-#    You must put the the software --LINUX.X64_193000_db_home.zip to base dir. 
+#    You must put the the software --LINUX.X64_213000_db_home.zip to base dir. 
 #			example: My base dir is /u01.
 #	 You must mount the OS ISO ,then you must sure can exec yum
 #	 Attention: all password is "oracle" that is used by the new users appearing
@@ -108,43 +101,6 @@ ObtainBasedir(){
 }
 
 ####################################################################################
-#obtain ORACLE_SID
-####################################################################################
-ObtainSID(){
-	if [ "${osid:-None}" == "None" ];then
-		read -p "`echo -e "please enter the sid.default [${c_yellow}orcl${c_end}]: "`" osid
-	fi
-	
-	####################################################################################
-	#get container
-	####################################################################################
-	while true
-	do
-		read -p "`echo -e "Do you create container database？ yes/no. Default \e[1;33m no \e[0m: "`" ContainerConfirm
-		if [ ${ContainerConfirm:-no} == "no" ];then
-			break
-		elif [ ${ContainerConfirm:-no} == "yes" ];then
-			read -p "`echo -e "PDB name:  "`" PDBName
-			if [ ! ${PDBName} ];then
-				echo "PDB name must be not empty!"
-				continue
-			else
-				break
-			fi
-		else
-			echo "You only enter yes or no."
-			continue
-		fi
-	done
-	
-	#echo ${osid}
-	orasid=${osid:-orcl}
-	su - oracle -c "sed -i 's/^ORACLE_SID=$/ORACLE_SID='${orasid}'/g' ~/.bash_profile"
-	#source ~/.bash_profile
-	
-}
-
-####################################################################################
 #obtain the characterSet for instance
 ####################################################################################
 ObtainCharacter(){
@@ -199,45 +155,55 @@ ObtainMemPerc(){
 	
 }
 
+
 ####################################################################################
 #install rpm that oracle is necessary for installing
 ####################################################################################
 InstallRPM(){
 	mountPatch=`mount | egrep "iso|ISO" | awk '{print $3}'`
-	if [ ! ${mountPatch} ];then
-		echo "No ios file is mounted. Please check whether the YUM command can install the RPM package."
-        	while true
-            do
-				read -p "`echo -e "Go on to install? [${c_yellow}yes/no${c_end}]: "`" isgo
-				if [ ! ${isgo} ];then
-					echo -e "${c_yellow}You must enter yes or no.${c_end}"
-					continue
-				elif [ ${isgo} == "yes" ];then
-					break
-				elif [ ${isgo} == "no" ];then
-					exit 0
-				fi
-            done
-    else
-    	[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
-    	echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
-    	echo "[server]" >> /etc/yum.repos.d/local.repo
-		echo "name=server" >> /etc/yum.repos.d/local.repo
-		echo "baseurl=file://"${mountPatch} >> /etc/yum.repos.d/local.repo
-		echo "enabled=1" >> /etc/yum.repos.d/local.repo
-		echo "gpgcheck=1" >> /etc/yum.repos.d/local.repo
-		echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
-		rpm --import ${mountPatch}/RPM-GPG-KEY-redhat-release
-
+	
+	if [ `uname -a | awk -F'x86' '{print $1}' | awk -F. '{print $(NF-1)}'` == 'el7' ];then
+		if [ ! ${mountPatch} ];then
+			echo "The ISO file is not mounted on system."
+        	exit 99
+    	else
+    		[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
+    		echo "#OraConfBegin" >> /etc/yum.repos.d/local.repo
+    		echo "[server]" >> /etc/yum.repos.d/local.repo
+			echo "name=server" >> /etc/yum.repos.d/local.repo
+			echo "baseurl=file://"${mountPatch} >> /etc/yum.repos.d/local.repo
+			echo "enabled=1" >> /etc/yum.repos.d/local.repo
+			echo "gpgcheck=1" >> /etc/yum.repos.d/local.repo
+			echo "#OraConfEnd" >> /etc/yum.repos.d/local.repo
+			rpm --import ${mountPatch}/RPM-GPG-KEY-redhat-release
+		fi
+    	RpmPackages="net-tools unzip bc binutils elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libstdc++ libxcb make policycoreutils policycoreutils-python smartmontools sysstat unixODBC"	
+    elif [ `uname -a | awk -F'x86' '{print $1}' | awk -F. '{print $(NF-1)}'` == 'el8' ];then
+        RpmPackages="net-tools unzip bc binutils compat-openssl10 elfutils-libelf glibc glibc-devel ksh libaio libXrender libX11 libXau libXi libXtst libgcc libnsl libstdc++ libxcb libibverbs make smartmontools sysstat unixODBC"
+		if [ ! ${mountPatch} ];then
+			echo "The ISO file is not mounted on system."
+        	exit 99
+    	else
+			[ -f "/etc/yum.repos.d/local.repo" ] && sed -i '/^#OraConfBegin/,/^#OraConfEnd/d' /etc/yum.repos.d/local.repo
+	    	echo "[AppStream]" >> /etc/yum.repos.d/local.repo
+			echo "name=AppStream" >> /etc/yum.repos.d/local.repo
+			echo "baseurl=file:///mnt/AppStream" >> /etc/yum.repos.d/local.repo
+			echo "gpgcheck=0" >> /etc/yum.repos.d/local.repo
+			echo "" >> /etc/yum.repos.d/local.repo
+			echo "[BaseOS]" >> /etc/yum.repos.d/local.repo
+			echo "name=BaseOS" >> /etc/yum.repos.d/local.repo
+			echo "baseurl=file:///mnt/BaseOS" >> /etc/yum.repos.d/local.repo
+			echo "gpgcheck=0" >> /etc/yum.repos.d/local.repo
+			echo "#OraConfEnd" >> /etc/yum.repos.d/local.repo
+		fi
 	fi
-	yum -y install unzip net-tools bc gcc gcc-c++  binutils  make gdb cmake  glibc ksh elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc-devel libaio libaio-devel libXrender libXrender-devel libX11 libXau sysstat libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils compat-libcap1 compat-libstdc++  smartmontools  targetcli python python-configshell python-rtslib python-six  unixODBC unixODBC-devel
-	# -y localinstall compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm 
-	#yum -y localinstall elfutils-libelf-devel-0.168-8.el7.x86_64.rpm
-	ls -l compat* elfutils* | awk -v rpmpackage="" '{rpmpackage=$NF" "rpmpackage}END{print "yum -y localinstall "rpmpackage}' | bash 
+	
+	echo "yum -y install "${RpmPackages} | bash
+	
 	while true
 	do
-		if [ `rpm -q unzip bc gcc gcc-c++  binutils  make gdb cmake  glibc ksh elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc-devel libaio libaio-devel libXrender libXrender-devel libX11 libXau sysstat libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils compat-libcap1 compat-libstdc++  smartmontools  targetcli python python-configshell python-rtslib python-six  unixODBC unixODBC-devel --qf '%{name}.%{arch}\n'| grep "not installed" | wc -l` -gt 0 ];then
-			rpm -q bc gcc gcc-c++  binutils  make gdb cmake  glibc ksh elfutils-libelf elfutils-libelf-devel fontconfig-devel glibc-devel libaio libaio-devel libXrender libXrender-devel libX11 libXau sysstat libXi libXtst libgcc librdmacm-devel libstdc++ libstdc++-devel libxcb net-tools nfs-utils compat-libcap1 compat-libstdc++  smartmontools  targetcli python python-configshell python-rtslib python-six  unixODBC unixODBC-devel --qf '%{name}.%{arch}\n'| grep "not installed"
+		if [ `rpm -q ${RpmPackages} --qf '%{name}.%{arch}\n'| grep "not installed" | wc -l` -gt 0 ];then
+			rpm -q ${RpmPackages} '%{name}.%{arch}\n'| grep "not installed"
 			read -p "`echo -e "Please confirm that all rpm package have installed.[${c_yellow}yes/no${c_end}] default yes:"`" ans
 			if [ "${ans:-yes}" == "yes" ];then
 				break
@@ -264,7 +230,7 @@ ObtainBasicInfo(){
 	#obtain ORACLE_BASE ORACLE_HOME
 	################################################################################
 	orabase="${basedir}/app/oracle"    #set path of oracle_base
-	orahome="${basedir}/app/oracle/product/19.3.0/dbhome_1" #set path of oracle_home
+	orahome="${basedir}/app/oracle/product/21.0.0/dbhome_1" #set path of oracle_home
 	
 }
 
@@ -339,6 +305,8 @@ CreateGUAndEditprofile(){
 			echo "Oracle is not existing."
 			exit  93
 		fi
+	else
+		usermod -g oinstall -G dba,backupdba,dgdba,kmdba,oper,racdba oracle 
 	fi
 	
 	
@@ -355,6 +323,7 @@ CreateGUAndEditprofile(){
 	su - oracle -c "echo \"#OraConfBegin\" >> /home/oracle/.bash_profile"
 	su - oracle -c "echo 'ORACLE_BASE='${orabase} >> /home/oracle/.bash_profile"
 	su - oracle -c "echo 'ORACLE_HOME='${orahome} >> /home/oracle/.bash_profile"
+	su - oracle -c "echo 'ORACLE_BASE_HOME='${orabase}/homes/OraDB21Home1 >> /home/oracle/.bash_profile"
 	su - oracle -c "echo 'ORACLE_SID=' >> /home/oracle/.bash_profile"
 	su - oracle -c "echo 'export ORACLE_BASE ORACLE_HOME ORACLE_SID' >> /home/oracle/.bash_profile"
 	su - oracle -c "echo 'export PATH=\$PATH:\$HOME/bin:\$ORACLE_HOME/bin' >> /home/oracle/.bash_profile"
@@ -367,6 +336,7 @@ CreateGUAndEditprofile(){
 	#create oracle home directory
 	####################################################################################
 	mkdir -p ${orahome}
+	mkdir -p ${basedir}/app/oraInventory
 	
 }
 
@@ -452,7 +422,7 @@ EditRdbmsRspFiles(){
 		rm -f ${basedir}/rdbms.rsp
 	fi
 	
-	echo 'oracle.install.responseFileVersion=/oracle/install/rspfmt_dbinstall_response_schema_v18.0.0' >> ${basedir}/rdbms.rsp
+	echo 'oracle.install.responseFileVersion=/oracle/install/rspfmt_dbinstall_response_schema_v121.0.0' >> ${basedir}/rdbms.rsp
 	echo 'oracle.install.option=INSTALL_DB_SWONLY' >> ${basedir}/rdbms.rsp
 	echo 'UNIX_GROUP_NAME=oinstall' >> ${basedir}/rdbms.rsp
 	echo 'INVENTORY_LOCATION='/${basedir}'/app/oraInventory' >> ${basedir}/rdbms.rsp
@@ -529,12 +499,12 @@ ObtainInstanceOption(){
 #install RDBMS function
 ####################################################################################
 InstallRdbms(){
-	if [ ! -f "${basedir}/LINUX.X64_193000_db_home.zip" ];then
+	if [ ! -f "${basedir}/LINUX.X64_213000_db_home.zip" ];then
         echo "Database file not exists.Please ensure you have uploaded."
 		exit 79
 	else
-		chown oracle:oinstall ${basedir}/LINUX.X64_193000_db_home.zip
-		su - oracle -c "unzip -d ${orahome} ${basedir}/LINUX.X64_193000_db_home.zip"
+		chown oracle:oinstall ${basedir}/LINUX.X64_213000_db_home.zip
+		su - oracle -c "unzip -d ${orahome} ${basedir}/LINUX.X64_213000_db_home.zip"
 		
 	fi
 	su - oracle -c "${orahome}/runInstaller -silent -noconfig -ignorePrereq -responseFile ${basedir}/rdbms.rsp > ${basedir}/install.log"
@@ -587,21 +557,24 @@ ObtainMemPerc(){
 ####################################################################################
 #obtain ORACLE_SID
 ####################################################################################
-# ObtainSID(){
-# 	if [ "${osid:-None}" == "None" ];then
-# 		read -p "`echo -e "please enter the sid.default [${c_yellow}orcl${c_end}]: "`" osid
-# 	fi
-# 	#echo ${osid}
-# 	orasid=${osid:-orcl}
-# 	su - oracle -c "sed -i 's/^ORACLE_SID=$/ORACLE_SID='${orasid}'/g' ~/.bash_profile"
-# 	
-# 	
-# }
+ObtainSID(){
+	if [ "${osid:-None}" == "None" ];then
+		read -p "`echo -e "please enter the sid.default [${c_yellow}orcl${c_end}]: "`" osid
+	fi
+
+	orasid=${osid:-orcl}
+	pdbname="${orasid}pdb1"
+ 	[ ${#aa} -gt 8 ] && aa=${aa:0:4}${aa:${#aa}-4:4}
+	#pdbname=`echo ${orasid}pdb1 | awk '{if(length($0)>8) {print substr($0,0,4)substr($0,length($0)-3,4)} else print $0}'`
+	su - oracle -c "sed -i 's/^ORACLE_SID=$/ORACLE_SID='${orasid}'/g' ~/.bash_profile"
+	
+	
+}
 
 ####################################################################################
-#edit dbca 19C rsp files
+#edit dbca 21.3 rsp files
 ####################################################################################
-EditDbca19CspFiles(){
+EditDbca21CspFiles(){
 	####################################################################################
 	#edit responseFile of instance
 	####################################################################################
@@ -613,78 +586,71 @@ EditDbca19CspFiles(){
 	sga=`free -m | awk '/Mem/{print int($2*('${perusemom}'/100)*0.75)}'`
 	pga=`free -m | awk '/Mem/{print int($2*('${perusemom}'/100)*0.25)}'`
 	
-	############################################################
-	#Determine whether a container database needs to be created
-	############################################################
-	if [ ${#PDBName} -gt 0 ];then
-		pdbnumber=1
-		ispdb=true
-		pdbAdminPWD=oracle
-	else 
-		pdbnumber=0
-		ispdb=false
-	fi
 	
-	
-	echo 'responseFileVersion=/oracle/assistants/rspfmt_dbca_response_schema_v12.2.0' > ${basedir}/dbca.rsp
-	echo 'gdbName='${orasid} >> ${basedir}/dbca.rsp
-	echo 'sid='${orasid} >> ${basedir}/dbca.rsp
-	echo 'databaseConfigType=SI' >> ${basedir}/dbca.rsp
-	echo 'RACOneNodeServiceName=' >> ${basedir}/dbca.rsp
-	echo 'policyManaged=false' >> ${basedir}/dbca.rsp
-	echo 'createServerPool=false' >> ${basedir}/dbca.rsp
-	echo 'serverPoolName=' >> ${basedir}/dbca.rsp
-	echo 'cardinality= ' >> ${basedir}/dbca.rsp
-	echo 'force=false  ' >> ${basedir}/dbca.rsp
-	echo 'pqPoolName=  ' >> ${basedir}/dbca.rsp
-	echo 'pqCardinality=' >> ${basedir}/dbca.rsp
-	echo 'createAsContainerDatabase='${ispdb} >> ${basedir}/dbca.rsp
-	echo 'numberOfPDBs='${pdbnumber} >> ${basedir}/dbca.rsp
-	echo 'pdbName='${PDBName}    >> ${basedir}/dbca.rsp
-	echo 'useLocalUndoForPDBs=true' >> ${basedir}/dbca.rsp
-	echo 'pdbAdminPassword='${pdbAdminPWD} >> ${basedir}/dbca.rsp
-	echo 'nodelist=    ' >> ${basedir}/dbca.rsp
-	echo 'templateName='${orahome}'/assistants/dbca/templates/New_Database.dbt' >> ${basedir}/dbca.rsp
-	echo 'sysPassword=oracle ' >> ${basedir}/dbca.rsp
-	echo 'systemPassword=oracle ' >> ${basedir}/dbca.rsp
-	echo 'serviceUserPassword=' >> ${basedir}/dbca.rsp
-	echo 'emConfiguration=' >> ${basedir}/dbca.rsp
-	echo 'emExpressPort=5500' >> ${basedir}/dbca.rsp
-	echo 'runCVUChecks=FALSE' >> ${basedir}/dbca.rsp
-	echo 'dbsnmpPassword=' >> ${basedir}/dbca.rsp
-	echo 'omsHost=     ' >> ${basedir}/dbca.rsp
-	echo 'omsPort=0    ' >> ${basedir}/dbca.rsp
-	echo 'emUser=      ' >> ${basedir}/dbca.rsp
-	echo 'emPassword=  ' >> ${basedir}/dbca.rsp
-	echo 'dvConfiguration=false' >> ${basedir}/dbca.rsp
-	echo 'dvUserName=  ' >> ${basedir}/dbca.rsp
-	echo 'dvUserPassword=' >> ${basedir}/dbca.rsp
-	echo 'dvAccountManagerName=' >> ${basedir}/dbca.rsp
-	echo 'dvAccountManagerPassword=' >> ${basedir}/dbca.rsp
-	echo 'olsConfiguration=false' >> ${basedir}/dbca.rsp
-	echo 'datafileJarLocation=' >> ${basedir}/dbca.rsp
-	echo 'datafileDestination=' >> ${basedir}/dbca.rsp
-	echo 'recoveryAreaDestination=' >> ${basedir}/dbca.rsp
-	echo 'storageType= ' >> ${basedir}/dbca.rsp
-	echo 'diskGroupName=' >> ${basedir}/dbca.rsp
-	echo 'asmsnmpPassword=' >> ${basedir}/dbca.rsp
-	echo 'recoveryGroupName=' >> ${basedir}/dbca.rsp
-	echo 'characterSet='${InCharacter} >> ${basedir}/dbca.rsp
-	echo 'nationalCharacterSet=AL16UTF16' >> ${basedir}/dbca.rsp
-	echo 'registerWithDirService=false' >> ${basedir}/dbca.rsp
-	echo 'dirServiceUserName=' >> ${basedir}/dbca.rsp
-	echo 'dirServicePassword=' >> ${basedir}/dbca.rsp
-	echo 'walletPassword=' >> ${basedir}/dbca.rsp
-	echo 'listeners=   ' >> ${basedir}/dbca.rsp
-	echo 'variablesFile=' >> ${basedir}/dbca.rsp
-	echo 'variables=ORACLE_BASE_HOME='${orahome}',DB_UNIQUE_NAME='${orasid}',ORACLE_BASE='${orabase}',PDB_NAME='${PDBName}',DB_NAME='${orasid}',ORACLE_HOME='${orahome}',SID='${orasid} >> ${basedir}/dbca.rsp
-	echo 'initParams=undo_tablespace=UNDOTBS1,db_block_size=8192BYTES,nls_language=AMERICAN,dispatchers=(PROTOCOL=TCP) (SERVICE='${orasid}'XDB),diagnostic_dest={ORACLE_BASE},control_files=("{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control01.ctl", "{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control02.ctl"),remote_login_passwordfile=EXCLUSIVE,audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,processes=300,nls_territory=AMERICA,local_listener=LISTENER_TEST,pga_aggregate_target='${pga}'MB,sga_target='${sga}'MB,open_cursors=1000,compatible=18.0.0,db_name='${orasid}',audit_trail=db' >> ${basedir}/dbca.rsp
-	echo 'sampleSchema=false' >> ${basedir}/dbca.rsp
-	echo 'memoryPercentage='${perusemom} >> ${basedir}/dbca.rsp
-	echo 'databaseType=MULTIPURPOSE' >> ${basedir}/dbca.rsp
-	echo 'automaticMemoryManagement=false' >> ${basedir}/dbca.rsp
-	echo 'totalMemory=0' >> ${basedir}/dbca.rsp
-	
+	echo 'responseFileVersion=/oracle/assistants/rspfmt_dbca_response_schema_v21.0.0 ' > ${basedir}/dbca.rsp
+    echo 'gdbName='${orasid} >> ${basedir}/dbca.rsp
+    echo 'sid='${orasid} >> ${basedir}/dbca.rsp
+    echo 'databaseConfigType=SI ' >> ${basedir}/dbca.rsp
+    echo 'RACOneNodeServiceName= ' >> ${basedir}/dbca.rsp
+    echo 'policyManaged=false ' >> ${basedir}/dbca.rsp
+    echo 'managementPolicy=AUTOMATIC ' >> ${basedir}/dbca.rsp
+    echo 'createServerPool=false ' >> ${basedir}/dbca.rsp
+    echo 'serverPoolName= ' >> ${basedir}/dbca.rsp
+    echo 'cardinality= ' >> ${basedir}/dbca.rsp
+    echo 'force=false ' >> ${basedir}/dbca.rsp
+    echo 'pqPoolName= ' >> ${basedir}/dbca.rsp
+    echo 'pqCardinality= ' >> ${basedir}/dbca.rsp
+    echo 'createAsContainerDatabase=true ' >> ${basedir}/dbca.rsp
+    echo 'numberOfPDBs=1 ' >> ${basedir}/dbca.rsp
+    echo 'pdbName='${pdbname} >> ${basedir}/dbca.rsp
+    echo 'useLocalUndoForPDBs=true ' >> ${basedir}/dbca.rsp
+    echo 'pdbAdminPassword=oracle ' >> ${basedir}/dbca.rsp
+    echo 'nodelist= ' >> ${basedir}/dbca.rsp
+    echo 'templateName=/u01/app/oracle/product/21.0.0/dbhome_1/assistants/dbca/templates/New_Database.dbt ' >> ${basedir}/dbca.rsp
+    echo 'sysPassword=oracle ' >> ${basedir}/dbca.rsp
+    echo 'systemPassword=oracle  ' >> ${basedir}/dbca.rsp
+    echo 'serviceUserPassword= ' >> ${basedir}/dbca.rsp
+    echo 'emConfiguration= ' >> ${basedir}/dbca.rsp
+    echo 'emExpressPort=5500 ' >> ${basedir}/dbca.rsp
+    echo 'runCVUChecks=FALSE ' >> ${basedir}/dbca.rsp
+    echo 'dbsnmpPassword= ' >> ${basedir}/dbca.rsp
+    echo 'omsHost= ' >> ${basedir}/dbca.rsp
+    echo 'omsPort=0 ' >> ${basedir}/dbca.rsp
+    echo 'emUser= ' >> ${basedir}/dbca.rsp
+    echo 'emPassword= ' >> ${basedir}/dbca.rsp
+    echo 'dvConfiguration=false ' >> ${basedir}/dbca.rsp
+    echo 'dvUserName= ' >> ${basedir}/dbca.rsp
+    echo 'dvUserPassword= ' >> ${basedir}/dbca.rsp
+    echo 'dvAccountManagerName= ' >> ${basedir}/dbca.rsp
+    echo 'dvAccountManagerPassword= ' >> ${basedir}/dbca.rsp
+    echo 'olsConfiguration=false ' >> ${basedir}/dbca.rsp
+    echo 'datafileJarLocation= ' >> ${basedir}/dbca.rsp
+    echo 'datafileDestination={ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/ ' >> ${basedir}/dbca.rsp
+    echo 'recoveryAreaDestination= ' >> ${basedir}/dbca.rsp
+    echo 'recoveryAreaSize=54525952BYTES ' >> ${basedir}/dbca.rsp
+    echo 'configureWithOID= ' >> ${basedir}/dbca.rsp
+    echo 'pdbOptions=JSERVER:true,ORACLE_TEXT:true,IMEDIA:true,CWMLITE:true,SPATIAL:true,OMS:false,SAMPLE_SCHEMA:false,DV:false ' >> ${basedir}/dbca.rsp
+    echo 'dbOptions=JSERVER:true,ORACLE_TEXT:true,IMEDIA:true,CWMLITE:true,SPATIAL:true,OMS:false,SAMPLE_SCHEMA:false,DV:false ' >> ${basedir}/dbca.rsp
+    echo 'storageType=FS ' >> ${basedir}/dbca.rsp
+    echo 'diskGroupName= ' >> ${basedir}/dbca.rsp
+    echo 'asmsnmpPassword= ' >> ${basedir}/dbca.rsp
+    echo 'recoveryGroupName= ' >> ${basedir}/dbca.rsp
+    echo 'characterSet='${InCharacter} >> ${basedir}/dbca.rsp
+    echo 'nationalCharacterSet=AL16UTF16 ' >> ${basedir}/dbca.rsp
+    echo 'registerWithDirService=false ' >> ${basedir}/dbca.rsp
+    echo 'dirServiceUserName= ' >> ${basedir}/dbca.rsp
+    echo 'dirServicePassword= ' >> ${basedir}/dbca.rsp
+    echo 'walletPassword= ' >> ${basedir}/dbca.rsp
+    echo 'listeners= ' >> ${basedir}/dbca.rsp
+    echo 'skipListenerRegistration=true ' >> ${basedir}/dbca.rsp
+    echo 'variablesFile= ' >> ${basedir}/dbca.rsp
+    echo 'variables=ORACLE_BASE_HOME='${orabase}'/homes/OraDB21Home,DB_UNIQUE_NAME='${orasid}',ORACLE_BASE='${orabase}',PDB_NAME=,DB_NAME='${orasid}',ORACLE_HOME='${orahome}',SID='${orasid} >> ${basedir}/dbca.rsp
+    echo 'initParams=undo_tablespace=UNDOTBS1,enable_pluggable_database=true,sga_target='${sga}'MB,db_block_size=8192BYTES,nls_language=AMERICAN,dispatchers=(PROTOCOL=TCP) (SERVICE='${orasid}'XDB),diagnostic_dest={ORACLE_BASE},control_files=("{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control01.ctl", "{ORACLE_BASE}/oradata/{DB_UNIQUE_NAME}/control02.ctl"),remote_login_passwordfile=EXCLUSIVE,audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,processes=1500,pga_aggregate_target='${pga}'MB,nls_territory=AMERICA,local_listener=LISTENER_'${orasid}',open_cursors=300,compatible=21.0.0,db_name='${orasid}',audit_trail=db ' >> ${basedir}/dbca.rsp
+    echo 'enableArchive=false ' >> ${basedir}/dbca.rsp
+    echo 'useOMF=false ' >> ${basedir}/dbca.rsp
+    echo 'memoryPercentage= ' >> ${basedir}/dbca.rsp
+    echo 'databaseType=MULTIPURPOSE ' >> ${basedir}/dbca.rsp
+    echo 'automaticMemoryManagement=false ' >> ${basedir}/dbca.rsp
 	
 	chown oracle:oinstall ${basedir}/dbca.rsp
 }
@@ -790,29 +756,6 @@ ConfigTnsnames(){
 	su - oracle -c "echo '  )' >> ${orahome}/network/admin/tnsnames.ora"
 }
 
-####################################################################################
-#initial parameter
-####################################################################################
-InitialPara(){
-	su - oracle -c "sqlplus /nolog <<-RAY
-	conn / as sysdba
-	ALTER PROFILE DEFAULT LIMIT PASSWORD_LIFE_TIME UNLIMITED;
-	alter system set open_cursors=1500 scope=both;
-	alter system set session_cached_cursors=100 scope=spfile;
-	alter system set processes=1000 scope=spfile;
-	alter system set sessions=1000 scope=spfile;
-	ALTER SYSTEM SET \"_use_adaptive_log_file_sync\"= false;
-	exit
-	RAY"
-	
-	su - oracle -c "sqlplus /nolog <<-RAY
-	conn / as sysdba
-	shutdown immediate;
-	startup
-	exit
-	RAY"
-}
-
 
 
 ####################################################################################
@@ -838,83 +781,14 @@ InstallFun(){
 	ObtainMemPerc
 	ObtainSID
 	ObtainCharacter
-	EditDbca19CspFiles
-	InstallInstance
-	ConfigListen
-	ConfigTnsnames
-	InitialPara
+	EditDbca21CspFiles
+ 	InstallInstance
+ 	ConfigListen
+ 	ConfigTnsnames
 }
 
 ####################################################################################
 #begin to install
 ####################################################################################
 InstallFun
-
-####################################################################################
-#The entry of the script
-####################################################################################
-#
-#obtain the values of parameters
-#
-#while (($#>=1))
-#do
-#	#
-#	#to sure is the parameter start with --
-#	#
-#	if [ `echo $1 | egrep "^--"` ];then
-#		if [ "$1" == "--usedefaultdatapath" ];then
-#			datafiledir="default"
-#			shift
-#			continue
-#		fi 
-#		if [ "$1" == "--notinstallinstance" ];then
-#			installoption=no
-#			shift
-#			continue
-#		fi
-#		pastpara=$1
-#		shift
-#		if [ `echo $1 | egrep "^--"` ];then
-#			echo "The value of ${pastpara} must be specified!"
-#			exit 99
-#		fi
-#
-#		case `echo $pastpara | sed s/--//g` in
-#			listeninterface)
-#				eth=$1
-#			;;
-#			basedirectory)
-#				basedir=$1
-#			;;
-#			oraclesid)
-#				osid=$1
-#			;;
-#			memorypercent)
-#				mper=$1
-#				if [ -n "`echo ${mper} | sed 's/[0-9]//g' | sed 's/-//g'`" ];then
-#    				echo -e "please enter ${c_red}exact number${c_end} for $pastpara"
-#    				exit 97
-#  				fi
-#			;;
-#			oraclesoftname)
-#				oraname=$1
-#			;;
-#			datafilepath)
-#				datafiledir=$1
-#			;;
-#			help)
-#				help_fun
-#				exit 0
-#			;;
-#			*)
-#				echo "$lastpara is a illegal parameter!"
-#				exit 98
-#			;;
-#		esac
-#	else
-#		shift
-#		continue
-#	fi
-#
-#done
 
