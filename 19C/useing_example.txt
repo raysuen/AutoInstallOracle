@@ -1,0 +1,307 @@
+#######################################################################
+使用流程：
+	1、把安装包(zip文件)和脚本放入到基础安装目录(例如/u01)
+	2、在安全rdbms之前的任意过程都可以重复执行脚本
+#######################################################################
+执行案例：
+#######################################################################
+
+﻿[root@ray103 u01]# bash AutoInstallOracle19COnLinux7.sh 
+
+please confirm that you have put the script and software into the base dir.  
+
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+
+This system is not registered with an entitlement server. You can use subscription-manager to register.
+
+server                                                                                                                                                     | 2.8 kB  00:00:00     
+Package unzip-6.0-21.el7.x86_64 already installed and latest version
+Package net-tools-2.0-0.25.20131004git.el7.x86_64 already installed and latest version
+Package bc-1.06.95-13.el7.x86_64 already installed and latest version
+Package gcc-4.8.5-44.el7.x86_64 already installed and latest version
+Package gcc-c++-4.8.5-44.el7.x86_64 already installed and latest version
+Package binutils-2.27-44.base.el7.x86_64 already installed and latest version
+Package 1:make-3.82-24.el7.x86_64 already installed and latest version
+Package gdb-7.6.1-120.el7.x86_64 already installed and latest version
+Package cmake-2.8.12.2-2.el7.x86_64 already installed and latest version
+Package glibc-2.17-317.el7.x86_64 already installed and latest version
+Package ksh-20120801-142.el7.x86_64 already installed and latest version
+Package elfutils-libelf-0.176-5.el7.x86_64 already installed and latest version
+Package elfutils-libelf-devel-0.176-5.el7.x86_64 already installed and latest version
+Package fontconfig-devel-2.13.0-4.3.el7.x86_64 already installed and latest version
+Package glibc-devel-2.17-317.el7.x86_64 already installed and latest version
+Package libaio-0.3.109-13.el7.x86_64 already installed and latest version
+Package libaio-devel-0.3.109-13.el7.x86_64 already installed and latest version
+Package libXrender-0.9.10-1.el7.x86_64 already installed and latest version
+Package libXrender-devel-0.9.10-1.el7.x86_64 already installed and latest version
+Package libX11-1.6.7-2.el7.x86_64 already installed and latest version
+Package libXau-1.0.8-2.1.el7.x86_64 already installed and latest version
+Package sysstat-10.1.5-19.el7.x86_64 already installed and latest version
+Package libXi-1.7.9-1.el7.x86_64 already installed and latest version
+Package libXtst-1.2.3-1.el7.x86_64 already installed and latest version
+Package libgcc-4.8.5-44.el7.x86_64 already installed and latest version
+Package rdma-core-devel-22.4-5.el7.x86_64 already installed and latest version
+Package libstdc++-4.8.5-44.el7.x86_64 already installed and latest version
+Package libstdc++-devel-4.8.5-44.el7.x86_64 already installed and latest version
+Package libxcb-1.13-1.el7.x86_64 already installed and latest version
+Package net-tools-2.0-0.25.20131004git.el7.x86_64 already installed and latest version
+Package 1:nfs-utils-1.3.0-0.68.el7.x86_64 already installed and latest version
+Package compat-libcap1-1.10-7.el7.x86_64 already installed and latest version
+No package compat-libstdc++ available.
+Package 1:smartmontools-7.0-2.el7.x86_64 already installed and latest version
+Package targetcli-2.1.51-2.el7.noarch already installed and latest version
+Package python-2.7.5-89.el7.x86_64 already installed and latest version
+Package 1:python-configshell-1.1.26-1.el7.noarch already installed and latest version
+Package python-rtslib-2.1.72-1.el7.noarch already installed and latest version
+Package python-six-1.9.0-2.el7.noarch already installed and latest version
+Package unixODBC-2.3.1-14.el7.x86_64 already installed and latest version
+Package unixODBC-devel-2.3.1-14.el7.x86_64 already installed and latest version
+Nothing to do
+ls: cannot access compat*: No such file or directory
+ls: cannot access elfutils*: No such file or directory
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+
+This system is not registered with an entitlement server. You can use subscription-manager to register.
+
+Error: Need to pass a list of pkgs to localinstall
+ Mini usage:
+
+localinstall FILE
+
+Install a local RPM
+
+alias: localupdate
+package librdmacm-devel is not installed
+package compat-libstdc++ is not installed
+Please confirm that all rpm package have installed.[yes/no] default yes:
+Removed symlink /etc/systemd/system/multi-user.target.wants/firewalld.service.
+Removed symlink /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service.
+please enter the name of base dir,put this shell and software in the dir.default [/u01]: 
+internet name:
+        lo: 127.0.0.1
+        enp0s3: 172.16.0.103
+        enp0s8: 192.168.46.103
+please enter the name of Ethernet，default [lo]: enp0s8
+Changing password for user oracle.
+passwd: all authentication tokens updated successfully.
+sysctl: reading key "net.ipv6.conf.all.stable_secret"
+sysctl: reading key "net.ipv6.conf.default.stable_secret"
+sysctl: reading key "net.ipv6.conf.enp0s3.stable_secret"
+sysctl: reading key "net.ipv6.conf.enp0s8.stable_secret"
+sysctl: reading key "net.ipv6.conf.lo.stable_secret"
+sysctl: reading key "net.ipv6.conf.all.stable_secret"
+sysctl: reading key "net.ipv6.conf.default.stable_secret"
+sysctl: reading key "net.ipv6.conf.enp0s3.stable_secret"
+sysctl: reading key "net.ipv6.conf.enp0s8.stable_secret"
+sysctl: reading key "net.ipv6.conf.lo.stable_secret"
+kernel.shmall = 18446744073692774399
+kernel.shmmax = 18446744073692774399
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+fs.file-max = 6815744
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048576
+fs.aio-max-nr = 1048576
+Archive:  /u01/LINUX.X64_193000_db_home.zip
+   creating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/
+   creating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/admin/
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/admin/drdasqtt_translator_setup.sql  
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/admin/drdapkg_db2.sql  
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/admin/drdaas.ora  
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/admin/drdasqt_set_profile_dd.sql  
+   creating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/lib/
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/lib/s0dpspmain.o  
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/lib/s0dpscmain.o  
+  inflating: /u01/app/oracle/product/19.3.0/dbhome_1/drdaas/lib/s0dpssmain.o  
+  .......
+  
+    linking: /u01/app/oracle/product/19.3.0/dbhome_1/javavm/admin/lfclasses.bin  -> ../../javavm/jdk/jdk8/admin/lfclasses.bin 
+    linking: /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/security/cacerts  -> ../../../javavm/jdk/jdk8/lib/security/cacerts 
+    linking: /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/sunjce_provider.jar  -> ../../javavm/jdk/jdk8/lib/sunjce_provider.jar 
+    linking: /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/security/README.txt  -> ../../../javavm/jdk/jdk8/lib/security/README.txt 
+    linking: /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/security/java.security  -> ../../../javavm/jdk/jdk8/lib/security/java.security 
+    linking: /u01/app/oracle/product/19.3.0/dbhome_1/jdk/jre/lib/amd64/server/libjsig.so  -> ../libjsig.so 
+ extracting: /u01/app/oracle/product/19.3.0/dbhome_1/install/.img.bin  
+finishing deferred symbolic links:
+  /u01/app/oracle/product/19.3.0/dbhome_1/bin/lbuilder -> ../nls/lbuilder/lbuilder
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libocci.so -> libocci.so.19.1
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libagtsh.so -> libagtsh.so.1.0
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libodm19.so -> libodmd19.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libclntsh.so -> libclntsh.so.19.1
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libjavavm19.a -> ../javavm/jdk/jdk8/lib/libjavavm19.a
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/jce.jar -> ../../javavm/jdk/jdk8/lib/jce.jar
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libocci.so.18.1 -> libocci.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libclntshcore.so -> libclntshcore.so.19.1
+  /u01/app/oracle/product/19.3.0/dbhome_1/jdk/bin/ControlPanel -> jcontrol
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/admin/cbp.jar -> ../../javavm/jdk/jdk8/admin/cbp.jar
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libclntsh.so.10.1 -> libclntsh.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libclntsh.so.11.1 -> libclntsh.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libclntsh.so.12.1 -> libclntsh.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/lib/libclntsh.so.18.1 -> libclntsh.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/precomp/public/SQLCA.H -> sqlca.h
+  /u01/app/oracle/product/19.3.0/dbhome_1/precomp/public/SQLDA.H -> sqlda.h
+  /u01/app/oracle/product/19.3.0/dbhome_1/precomp/public/ORACA.H -> oraca.h
+  /u01/app/oracle/product/19.3.0/dbhome_1/precomp/public/SQLCA.COB -> sqlca.cob
+  /u01/app/oracle/product/19.3.0/dbhome_1/precomp/public/ORACA.COB -> oraca.cob
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/admin/classes.bin -> ../../javavm/jdk/jdk8/admin/classes.bin
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/admin/libjtcjt.so -> ../../javavm/jdk/jdk8/admin/libjtcjt.so
+  /u01/app/oracle/product/19.3.0/dbhome_1/jdk/jre/bin/ControlPanel -> jcontrol
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/admin/lfclasses.bin -> ../../javavm/jdk/jdk8/admin/lfclasses.bin
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/security/cacerts -> ../../../javavm/jdk/jdk8/lib/security/cacerts
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/sunjce_provider.jar -> ../../javavm/jdk/jdk8/lib/sunjce_provider.jar
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/security/README.txt -> ../../../javavm/jdk/jdk8/lib/security/README.txt
+  /u01/app/oracle/product/19.3.0/dbhome_1/javavm/lib/security/java.security -> ../../../javavm/jdk/jdk8/lib/security/java.security
+  /u01/app/oracle/product/19.3.0/dbhome_1/jdk/jre/lib/amd64/server/libjsig.so -> ../libjsig.so
+ 
+ 
+you use the command to get information about installation: tail -f /u01/install.log
+ 
+Changing permissions of //u01/app/oraInventory.
+Adding read,write permissions for group.
+Removing read,write,execute permissions for world.
+
+Changing groupname of //u01/app/oraInventory to oinstall.
+The execution of the script is complete.
+Check /u01/app/oracle/product/19.3.0/dbhome_1/install/root_ray103_2023-06-01_09-16-40-743284878.log for the output of root script
+ RDBMS has been installed.
+
+Do you want to install the database instance.yes/no  :yes
+Please enter the momery percentage of the oracle using server momery.default [60]: 
+please enter the sid.default [orcl]: raysuen
+Do you create container database？ yes/no. Default  no : yes
+PDB name:  suenpdb
+please enter the characterSet for your instance.
+(1) ZHS16GBK
+(2) AL32UTF8
+.Please enter 1 or 2 to choose character: 2
+Default datafile directory is /u01/app/oracle/oradata/raysuen
+You can specify another directory.Do you sure change datafile directory.default no .yes/no  :
+[WARNING] [DBT-06208] The 'SYS' password entered does not conform to the Oracle recommended standards.
+   CAUSE: 
+a. Oracle recommends that the password entered should be at least 8 characters in length, contain at least 1 uppercase character, 1 lower case character and 1 digit [0-9].
+b.The password entered is a keyword that Oracle does not recommend to be used as password
+   ACTION: Specify a strong password. If required refer Oracle documentation for guidelines.
+[WARNING] [DBT-06208] The 'SYSTEM' password entered does not conform to the Oracle recommended standards.
+   CAUSE: 
+a. Oracle recommends that the password entered should be at least 8 characters in length, contain at least 1 uppercase character, 1 lower case character and 1 digit [0-9].
+b.The password entered is a keyword that Oracle does not recommend to be used as password
+   ACTION: Specify a strong password. If required refer Oracle documentation for guidelines.
+[WARNING] [DBT-06208] The 'PDBADMIN' password entered does not conform to the Oracle recommended standards.
+   CAUSE: 
+a. Oracle recommends that the password entered should be at least 8 characters in length, contain at least 1 uppercase character, 1 lower case character and 1 digit [0-9].
+b.The password entered is a keyword that Oracle does not recommend to be used as password
+   ACTION: Specify a strong password. If required refer Oracle documentation for guidelines.
+Prepare for db operation
+4% complete
+Creating and starting Oracle instance
+5% complete
+7% complete
+Creating database files
+8% complete
+11% complete
+Creating data dictionary views
+12% complete
+15% complete
+
+17% complete
+18% complete
+19% complete
+20% complete
+22% complete
+Oracle JVM
+28% complete
+33% complete
+39% complete
+41% complete
+Oracle Text
+43% complete
+44% complete
+Oracle Multimedia
+56% complete
+Oracle OLAP
+59% complete
+Oracle Spatial
+60% complete
+67% complete
+Creating cluster database views
+74% complete
+Completing Database Creation
+76% complete
+77% complete
+78% complete
+Creating Pluggable Databases
+80% complete
+89% complete
+Executing Post Configuration Actions
+100% complete
+Database creation complete. For details check the logfiles at:
+ /u01/app/oracle/cfgtoollogs/dbca/raysuen.
+Database Information:
+Global Database Name:raysuen
+System Identifier(SID):raysuen
+Look at the log file "/u01/app/oracle/cfgtoollogs/dbca/raysuen/raysuen.log" for further details.
+
+Parsing command line arguments:
+    Parameter "silent" = true
+    Parameter "responsefile" = /u01/app/oracle/product/19.3.0/dbhome_1/assistants/netca/netca.rsp
+Done parsing command line arguments.
+Oracle Net Services Configuration:
+Profile configuration complete.
+Oracle Net Listener Startup:
+    Running Listener Control: 
+      /u01/app/oracle/product/19.3.0/dbhome_1/bin/lsnrctl start LISTENER
+    Listener Control complete.
+    Listener started successfully.
+Listener configuration complete.
+Oracle Net Services configuration successful. The exit code is 0
+
+SQL*Plus: Release 19.0.0.0.0 - Production on Thu Jun 1 11:13:43 2023
+Version 19.3.0.0.0
+
+Copyright (c) 1982, 2019, Oracle.  All rights reserved.
+
+SQL> Connected.
+SQL> 
+Profile altered.
+
+SQL> 
+System altered.
+
+SQL> 
+System altered.
+
+SQL> 
+System altered.
+
+SQL> 
+System altered.
+
+SQL> 
+System altered.
+
+SQL> Disconnected from Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production
+Version 19.3.0.0.0
+
+SQL*Plus: Release 19.0.0.0.0 - Production on Thu Jun 1 11:13:44 2023
+Version 19.3.0.0.0
+
+Copyright (c) 1982, 2019, Oracle.  All rights reserved.
+
+SQL> Connected.
+SQL> Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL> ORACLE instance started.
+
+Total System Global Area 1795161192 bytes
+Fixed Size                  9137256 bytes
+Variable Size             419430400 bytes
+Database Buffers         1358954496 bytes
+Redo Buffers                7639040 bytes
+Database mounted.
+Database opened.
+SQL> Disconnected from Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production
+Version 19.3.0.0.0
